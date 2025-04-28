@@ -3,19 +3,21 @@ LABEL authors="thanawy"
 
 WORKDIR /app
 
-# Copy only necessary files to optimize build
-COPY package*.json /app/
+# Install serve globally
+RUN npm install -g serve
 
+# Copy package.json and install dependencies
+COPY package*.json ./
 RUN npm install
 
 # Copy the rest of the app
-COPY . /app
+COPY . .
 
-# Build the app (next build)
+# Build the app
 RUN npm run build
 
-# Ensure the startup script is executable
-COPY startup.sh /app/startup.sh
-RUN chmod +x /app/startup.sh
+# Expose port (optional, but nice)
+EXPOSE 3000
 
-ENTRYPOINT ["/app/startup.sh"]
+# Start serving production build
+CMD ["serve", "-s", "dist", "-l", "3000"]
