@@ -58,6 +58,10 @@ resource "kubernetes_deployment" "frontend" {
       }
     }
   }
+  timeouts {
+    create = "5m"
+    update = "3m"
+  }
 }
 
 resource "kubernetes_service" "frontend" {
