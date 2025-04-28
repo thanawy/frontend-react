@@ -1,0 +1,75 @@
+name: Test & Deploy frontend on K8s
+run-name: Build, Test & Deploy frontend on K8s
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  REGISTRY: harbor.thanawy.com
+  IMAGE_NAME: frontend-next
+
+jobs:
+  build:
+    permissions:
+      contents: 'read'
+
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: build
+        run: npm install
+
+      - name: build
+        run: npm run build
+
+  deploy:
+    needs: [build]
+    permissions:
+      contents: 'read'
+
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Log into the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: harbor.thanawy.com
+          username: admin
+          password: ${{ secrets.HARBOR_PASSWORD }}
+
+      - name: Extract metadata for the Docker image
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ${{ env.REGISTRY }}/library/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha # This will generate a tag based on the commit SHA
+            type=ref,event=pr
+            type=raw,value=latest # Explicitly add the latest tag
+
+      - name: Build and push the Docker image
+        uses: docker/build-push-action@v3
+        with:
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/library/${{ env.IMAGE_NAME }},mode=max,image-manifest=true
+          cache-to: type=inline
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Write kubeconfig to ~/.kube/config
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
+          chmod 600 ~/.kube/config
+
+      - name: Deploy to Cloud
+        run: |
+          cd deployment
+          terraform init
+          IMAGE=$(echo "${{ steps.meta.outputs.tags }}" | awk 'END{print}')
+          terraform apply -var "image=${IMAGE}" --auto-approve
