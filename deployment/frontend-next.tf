@@ -39,14 +39,14 @@ resource "kubernetes_deployment" "frontend" {
           image = var.image
           liveness_probe {
             http_get {
-              path = "/health"
+              path = "/"
               scheme = "HTTP"
               port = "3000"
             }
           }
           readiness_probe {
             http_get {
-              path = "/health"
+              path = "/"
               scheme = "HTTP"
               port = "3000"
             }
