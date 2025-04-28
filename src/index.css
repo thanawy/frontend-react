@@ -1,0 +1,40 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+@import "tailwindcss";
+
+@plugin "daisyui"{
+  themes: light;
+}
+
+
+
+.font-cairo{
+  font-family: 'Cairo', sans-serif;
+}
+body{
+  background-color: #FFFFF2;
+  font-family: 'Cairo', sans-serif;
+}
+.text-primary{
+  color: #712BF8;
+}
+.bg-primary{
+  background-color: #712BF8;
+}
+.bg-primary-700{
+  background-color: #712BF8;
+}
+
+.border-primary{
+  border-color: #8D55F9;
+}
+
+.text-secondary{
+  color: #5C5C5C;
+}
+.text-medGray{
+  color: #8B8B8B;
+}
+
+.primaryTransparent{
+  background-color: rgba(113, 43, 248, 0.08)
+}
