@@ -5,12 +5,12 @@ import landingHeroTAB from "../../assets/images/landingHeroTAB.svg";
 import landingHeroMOB from "../../assets/images/landingHeroMOB.svg";
 import arrowLeft from "../../assets/images/arrowLeft.svg";
 import stop from "../../assets/images/stop.svg";
-import GlobalButton from "../../components/GlobalButton/GlobalButton";
 import i1 from "../../assets/icons/whyIcon1.svg";
 import i2 from "../../assets/icons/whyIcon2.svg";
 import i3 from "../../assets/icons/whyIcon3.svg";
 import LandingTable from "../../components/LandingTable/LandingTable";
 import LandingTestimonial from "../../components/LandingTestimonial/LandingTestimonial";
+import GlobalButton from "../../components/GlobalButton/GlobalButton";  
 
 export default function StartLanding() {
   return (
@@ -66,7 +66,7 @@ export default function StartLanding() {
         <div className="px-4 sm:px-0 sm:block hidden lg:hidden">
           <img src={landingHeroTAB} alt="slogan-image" className="w-full" />
         </div>
-        <div className="px-4 sm:px-0 block sm:hidden ">
+        <div className=" sm:px-0 block sm:hidden ">
           <img src={landingHeroMOB} alt="slogan-image" className="w-full" />
         </div>
         {/* end After Hero */}
@@ -84,7 +84,7 @@ export default function StartLanding() {
               <h2 className="font-bold text-xl md:text-[22px] leading-[150%]">
                 نظام تحفيزي
               </h2>
-              <p className="text-secondary text-lg md:text-[20px] w-full md:w-[300px]">
+              <p className="text-secondary text-lg md:text-[20px] w-full">
                 تحليل شامل لنقاط الضعف باستخدام الذكاء الاصطناعي
               </p>
             </div>
@@ -93,7 +93,7 @@ export default function StartLanding() {
               <h2 className="font-bold text-xl md:text-[22px] leading-[150%]">
                 خطة تعلم شخصية{" "}
               </h2>
-              <p className="text-secondary text-lg md:text-[20px] w-full md:w-[300px]">
+              <p className="text-secondary text-lg md:text-[20px] w-full ">
                 أسئلة وتمارين مصممة خصيصاً لتحسين مستواك
               </p>
             </div>
@@ -102,7 +102,7 @@ export default function StartLanding() {
               <h2 className="font-bold text-xl md:text-[22px] leading-[150%]">
                 نظام تحفيزي
               </h2>
-              <p className="text-secondary text-lg md:text-[20px] w-full md:w-[300px]">
+              <p className="text-secondary text-lg md:text-[20px] w-full ">
                 مكافآت ومسابقات لجعل التعلم أكثر متعة
               </p>
             </div>
@@ -136,7 +136,7 @@ export default function StartLanding() {
         {/*end  what our students say */}
 
         {/* start  start your journey */}
-        <div className="px-0 py-10 bg-[#712BF8] text-center w-full px-4">
+        <div className=" py-10 bg-[#712BF8] text-center w-full px-4">
           <h3 className="text-white text-[30px] sm:text-[40px] font-extrabold mb-6 leading-[150%]">
             ابدأ رحلتك نحو التفوق الآن
           </h3>

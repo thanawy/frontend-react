@@ -12,8 +12,8 @@ export function StartNavbar() {
         {/* Auth Btns */}
 
        <div className="flex gap-4">
-       <GlobalButton type="primary">تسجيل الدخول</GlobalButton>
-       <GlobalButton type="white">إنشاء حسابك المجانى</GlobalButton>
+       <GlobalButton type="primary" to={"/login"}>تسجيل الدخول</GlobalButton>
+       <GlobalButton type="white" to={"register"}>إنشاء حسابك المجانى</GlobalButton>
        </div>
       </div>
     </div>
