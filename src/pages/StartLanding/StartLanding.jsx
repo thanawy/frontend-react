@@ -16,7 +16,7 @@ export default function StartLanding() {
   return (
     <div className="overflow-x-hidden">
       <StartNavbar />
-      <main>
+      <main className="">
         {/* start Hero-Section */}
         <div className="Hero-Section flex flex-col-reverse md:flex-row justify-between items-center md:items-start  pb-28 md:pb-[100px] bg-white pt-8 md:pt-16 min-h-[75vh] md:h-dvh px-4 sm:px-8 md:px-16 mt-[1px] gap-8 md:gap-0">
           <div className="w-full md:w-1/2 order-2 md:order-1 text-center md:text-right">
@@ -110,9 +110,11 @@ export default function StartLanding() {
         </div>
         {/* end why you choose us  */}
 
+
+
         {/*start what makes us special  */}
         <div
-          className="flex justify-center items-center flex-col px-4 sm:px-8 md:px-16 pb-16"
+          className="flex justify-center items-center flex-col px-4 sm:px-8 md:px-16 pb-16 "
           dir="rtl"
         >
           <h2 className="text-2xl sm:text-3xl md:text-[40px] font-bold mb-8 md:mb-12 text-center">
@@ -125,6 +127,9 @@ export default function StartLanding() {
           </div>
         </div>
         {/* end what makes us special  */}
+
+      
+
 
         {/* start what our students say */}
         <h2 className="text-2xl sm:text-3xl md:text-[40px] font-bold mb-8 md:mb-12 text-center">

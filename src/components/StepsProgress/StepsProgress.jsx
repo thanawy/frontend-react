@@ -2,11 +2,11 @@ import React from 'react';
 
 const StepsProgress = ({ steps, currentStep }) => {
   return (
-    <div className="flex items-center justify-center mb-8 gap-4 md:gap-9">
+    <div className="flex items-center justify-center mb-8 gap-5">
       {steps.map((step, index) => (
-        <div key={step.id} className="flex items-center gap-4 md:gap-8">
+        <div key={step.id} className="flex items-center gap-4 md:gap-10  text-center sm:mb-10 lg:mb-0 lg:mt-4">
           {/* Step number and label container */}
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center justify-center">
             <div
               className={`flex items-center justify-center w-12 h-12 md:w-16 md:h-16 rounded-full border-2 text-xl md:text-4xl ${
                 currentStep === step.id
@@ -34,7 +34,7 @@ const StepsProgress = ({ steps, currentStep }) => {
 
           {/* Connector line between steps */}
           {index < steps.length - 1 && (
-            <div className="w-8 md:w-16 h-0.5 bg-gray-300 mb-6"></div>
+            <div className="w-8 md:w-16 h-0.5 bg-gray-300 lg:mb-6 mb-4 sm:me-4 lg:me-10 lg:ms-4"></div>
           )}
         </div>
       ))}

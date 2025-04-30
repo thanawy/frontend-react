@@ -16,10 +16,7 @@ const PROGRAMS_DATA = [
     id: "c58644c1-4e95-4d39-bdd0-edd53e2706ac",
     name: "أدبي"
   },
-  {
-    id: "4e346bc2-f0de-462d-9845-f094cf323491",
-    name: "Science Division"
-  }
+
 ];
 
 // إنشاء كائن axios مع الإعدادات الافتراضية

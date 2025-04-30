@@ -1,6 +1,6 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { ChevronLeft } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { AuthContext } from "../../contexts/AuthContext";
 import CharacterSlider from "../../components/CharacterSlider/CharacterSlider";
 import StepsProgress from "../../components/StepsProgress/StepsProgress";
@@ -11,8 +11,8 @@ import * as registerApi from "../../API/RegisterApi";
 import poki1 from "../../assets/images/poki1.svg";
 import poki2 from "../../assets/images/poki2.svg";
 import poki3 from "../../assets/images/poki3.svg";
+// import { useNavigate } from "react-router-dom";
 
-// Slider data with images and changing text
 const sliderData = [
   {
     image: poki1,
@@ -34,7 +34,6 @@ const sliderData = [
   },
 ];
 
-// الخطوات
 const steps = [
   { id: 1, label: "الشعبة" },
   { id: 2, label: "البيانات الشخصية" },
@@ -42,83 +41,123 @@ const steps = [
 ];
 
 const Register = () => {
-  const { programs, selectProgram, selectedProgram } = useContext(AuthContext);
+  const { selectProgram, selectedProgram } = useContext(AuthContext);
   const [currentStep, setCurrentStep] = useState(1);
   const [registeredEmail, setRegisteredEmail] = useState("");
+  const [categories, setCategories] = useState([]);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  // Convert programs to categories format
-  const categories =
-    programs?.map((program) => ({
-      id: program.id,
-      label: program.name,
-      selected: selectedProgram?.id === program.id,
-    })) || [];
+  const programsQuery = useQuery({
+    queryKey: ["programs"],
+    queryFn: async () => {
+      try {
+        const response = await fetch('/api/programs');
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+        return await response.json();
+      } catch (error) {
+        console.error("Failed to fetch programs:", error);
+        return [];
+      }
+    },
+  });
 
-  // Handle category selection
+  useEffect(() => {
+    if (programsQuery.data) {
+      setCategories(
+        programsQuery.data.map((program) => ({
+          id: program.id,
+          label: program.name,
+          selected: selectedProgram?.id === program.id,
+        }))
+      );
+    }
+  }, [programsQuery.data, selectedProgram]);
+
   const handleCategorySelect = (selectedId) => {
     selectProgram(selectedId);
+    setCategories(
+      categories.map((category) => ({
+        ...category,
+        selected: category.id === selectedId,
+      }))
+    );
   };
 
-  // Handle next step
   const goToNextStep = () => {
     if (currentStep === 1 && !selectedProgram) {
-      alert("يجب اختيار الشعبة أولاً");
+      setErrorMessage("يجب اختيار الشعبة أولاً");
       return;
     }
 
+    setErrorMessage("");
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     }
   };
 
-  // Handle previous step
   const goToPreviousStep = () => {
+    setErrorMessage("");
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
   };
 
-  // Registration mutation
   const registerMutation = useMutation({
     mutationFn: async (userData) => {
-      const finalUserData = {
-        ...userData,
-        program: selectedProgram?.id,
-      };
-      return await registerApi.register(finalUserData);
+      try {
+        if (!userData.email || !userData.displayName || !userData.password || !userData.phoneNumber) {
+          throw new Error("يرجى تعبئة جميع الحقول المطلوبة");
+        }
+
+        if (!selectedProgram || !selectedProgram.id) {
+          throw new Error("يرجى اختيار الشعبة أولاً");
+        }
+
+        const finalUserData = {
+          ...userData,
+          program: selectedProgram.id,
+        };
+
+        return await registerApi.register(finalUserData);
+      } catch (error) {
+        console.error("Error preparing registration data:", error);
+        throw error;
+      }
     },
     onSuccess: (data) => {
       setRegisteredEmail(data.email || data.user?.email || "");
+      if (data.token) {
+        localStorage.setItem('authToken', data.token);
+      }
       goToNextStep();
     },
     onError: (error) => {
       console.error("Registration failed:", error);
-      alert(
+      setErrorMessage(
         "حدث خطأ أثناء التسجيل: " +
           (error.response?.data?.message || error.message)
       );
     },
   });
 
-  // Verification mutation
   const verifyEmailMutation = useMutation({
     mutationFn: async (code) => {
       return await registerApi.verifyEmail(code);
     },
     onSuccess: () => {
       alert("تم التحقق من بريدك الإلكتروني بنجاح!");
-      // هنا يمكنك توجيه المستخدم للصفحة الرئيسية أو صفحة تسجيل الدخول
-      window.location.href = "/login";
+      window.location.href = "/home";
     },
     onError: (error) => {
-      alert(
+      setErrorMessage(
         "فشل التحقق من البريد الإلكتروني: " +
           (error.response?.data?.message || error.message)
       );
     },
   });
 
-  // Resend verification code mutation
   const resendCodeMutation = useMutation({
     mutationFn: async () => {
       return await registerApi.resendVerificationCode(registeredEmail);
@@ -127,29 +166,41 @@ const Register = () => {
       alert("تم إعادة إرسال رمز التحقق بنجاح!");
     },
     onError: (error) => {
-      alert(
+      setErrorMessage(
         "فشل إعادة إرسال رمز التحقق: " +
           (error.response?.data?.message || error.message)
       );
     },
   });
 
-  // التعامل مع تسجيل مستخدم جديد
   const handleRegister = (userData) => {
     registerMutation.mutate(userData);
   };
 
-  // التعامل مع التحقق من رمز التفعيل
   const handleVerifyEmail = (code) => {
     verifyEmailMutation.mutate(code);
   };
 
-  // إعادة إرسال رمز التفعيل
   const handleResendCode = () => {
     resendCodeMutation.mutate();
   };
 
-  // عرض المكون المناسب حسب الخطوة الحالية
+  if (programsQuery.isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-primary text-xl">جاري تحميل البيانات...</div>
+      </div>
+    );
+  }
+
+  if (programsQuery.isError) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-red-500 text-xl">حدث خطأ أثناء تحميل البيانات. يرجى المحاولة مرة أخرى.</div>
+      </div>
+    );
+  }
+
   const renderStepContent = () => {
     switch (currentStep) {
       case 1:
@@ -185,12 +236,8 @@ const Register = () => {
   };
 
   return (
-    <div
-      className="flex flex-col md:flex-row-reverse h-screen w-full font-cairo px-6 md:px-24"
-      dir="rtl"
-    >
-      {/* Left side - Character slider */}
-      <div className="hidden md:block md:w-1/2">
+    <div className="flex flex-col md:flex-row-reverse lg:h-dvh   w-full font-cairo px-4 py-4  lg:px-10 ">
+      <div className="hidden lg:block md:w-1/2 ">
         <CharacterSlider
           slides={sliderData}
           onBack={goToPreviousStep}
@@ -198,35 +245,37 @@ const Register = () => {
         />
       </div>
 
-      {/* Right side - Registration form */}
-      <div className="w-full md:w-1/2 p-4 md:p-10 flex flex-col h-screen overflow-y-auto">
-        {/* Header with logo */}
-        <div className="flex justify-center items-center mb-8">
-          {/* Back button - Only show in mobile view */}
+      <div className="w-full lg:w-1/2 p-4 md:p-10 flex flex-col ">
+        <div className="flex  lg:flex-row flex-row-reverse justify-center items-center mb-4 md:mb-8">
           <button
             onClick={goToPreviousStep}
-            className={`text-gray-500 md:hidden ${
+            className={`text-gray-500 w-full flex justify-end md:hidden ${
               currentStep === 1 ? "invisible" : ""
             }`}
           >
-            <ChevronLeft size={24} />
-            <span>الرجوع</span>
+            <span className="text-sm">الرجوع</span>
+            <ChevronLeft size={24} /> 
           </button>
-          <div className="text-primary text-3xl md:text-4xl font-bold">
+          <div className="text-primary text-2xl lg:text-4xl mb-6 sm:mb-16 lg:mb-4  me-10 font-bold">
             ثانوي.آي
           </div>
         </div>
 
-        {/* Progress steps */}
         <StepsProgress steps={steps} currentStep={currentStep} />
 
-        {/* Current step content */}
-        {renderStepContent()}
+        {errorMessage && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4 text-sm md:text-base">
+            {errorMessage}
+          </div>
+        )}
 
-        {/* Footer sign in */}
-        <div className="text-center mt-6 mb-4">
-          <span className="text-sm text-gray-500">لديك حساب؟</span>
-          <a href="/login" className="text-sm text-purple-600 mr-1">
+        <div className="flex-grow">
+          {renderStepContent()}
+        </div>
+
+        <div className="text-center mt-4 mb-4 md:mt-6 md:mb-4">
+          <span className="text-xs md:text-sm text-gray-500">لديك حساب؟</span>
+          <a href="/login" className="text-xs md:text-sm text-purple-600 mr-1">
             تسجيل الدخول
           </a>
         </div>
