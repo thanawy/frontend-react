@@ -14,6 +14,7 @@ export default defineConfig({
         headers: {
           "X-Requested-With": "XMLHttpRequest",
           "Accept": "application/json",
+          
         }
       },
     },

@@ -6,14 +6,14 @@ import axios from 'axios';
 // إنشاء نسخة من axios مع الإعدادات الأساسية
 const baseURL = import.meta.env.PROD
   ? 'https://backend.thanawy.com'  // في البرودكشن
-  : '/api';                         // في التطوير
+  : '/https://backend.thanawy.com';                         // في التطوير
 
 const apiClient = axios.create({
   baseURL,
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 15000,
+  timeout: 5000,
 });
 
 /**
