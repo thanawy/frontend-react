@@ -69,7 +69,7 @@ const RegistrationForm = ({ onSubmit, isPending, onNext }) => {
             type="button"
             className="flex-1 border border-gray-300 rounded-lg py-2 flex items-center justify-center gap-1 text-gray-700 text-sm"
           >
-            <img src={facebookIcon} alt="facebookIcon" className="w-4 h-4" />
+            <img src={facebookIcon} alt="facebookIcon" className="w-4 h-4 bg-red-100" />
             <span>فيسبوك</span>
           </button>
 

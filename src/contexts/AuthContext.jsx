@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { createContext, useState } from "react";
 import axios from "axios";
 
-// بيانات البرامج الثابتة (يمكن جلبها من API لو أردت)
+
 const PROGRAMS_DATA = [
   {
     id: "e4662e3a-7244-4255-99b9-77f85e4b45b5",
@@ -19,10 +19,9 @@ const PROGRAMS_DATA = [
 
 ];
 
-// إنشاء كائن axios مع الإعدادات الافتراضية
 const baseURL = import.meta.env.PROD
-  ? 'https://backend.thanawy.com'  // في البرودكشن
-  : '/api';                         // في التطوير
+  ? 'https://backend.thanawy.com' 
+  : 'https://backend.thanawy.com';                         
 
 const apiClient = axios.create({
   baseURL,

@@ -1,37 +1,36 @@
-// API/RegisterApi.js
+
 
 import axios from 'axios';
 
-// إنشاء نسخة من axios مع الإعدادات الأساسية
 const apiClient = axios.create({
-  baseURL: 'https://backend.thanawy.com',  // تحديث عنوان API ليكون كاملاً
+  baseURL: 'https://backend.thanawy.com',
   headers: {
-    'Content-Type': 'application/json',
+    'Content-Type': 'application/json', 
   },
-  // إضافة مهلة أطول لانتظار استجابة الخادم (15 ثانية)
+
   timeout: 15000
 });
 
 /**
- * تسجيل مستخدم جديد
- * @param {Object} userData - بيانات المستخدم (email, displayName, password, phoneNumber, program)
- * @returns {Promise} - وعد يحتوي على البيانات المرجعة
+
+ * @param {Object} userData 
+ * @returns {Promise} 
  */
 export const register = async (userData) => {
   try {
-    // تأكد من وجود كل البيانات المطلوبة
+
     if (!userData.email || !userData.displayName || !userData.password || !userData.phoneNumber || !userData.program) {
       throw new Error('جميع البيانات المطلوبة غير موجودة');
     }
 
-    console.log('بيانات التسجيل:', { ...userData, password: '******' }); // إخفاء كلمة المرور للأمان
+    console.log('بيانات التسجيل:', { ...userData, password: '******' }); 
     
     const response = await apiClient.post('/auth/register', userData);
     
-    // تسجيل استجابة الخادم للتحقق من صحتها
+
     console.log('استجابة التسجيل:', response.data);
     
-    // حفظ البريد الإلكتروني في التخزين المحلي للاستخدام عند إعادة تحميل الصفحة
+
     localStorage.setItem('registeredEmail', userData.email);
     
     return response.data;
@@ -65,8 +64,8 @@ export const verifyEmail = async (code) => {
     
     console.log('بيانات التحقق:', { code, email });
     
-    // تحديث عنوان API للتحقق ليطابق العنوان المقدم
-    const response = await apiClient.post('/auth/verify-digit', { 
+    // إرسال كل من الرمز والبريد الإلكتروني للتأكد من صحة التحقق
+    const response = await apiClient.post('auth/verify-digit', { 
       code,
       email // إضافة البريد الإلكتروني للطلب إذا كان متاحًا
     });

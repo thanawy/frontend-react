@@ -51,7 +51,7 @@ const Register = () => {
     queryKey: ["programs"],
     queryFn: async () => {
       try {
-        const response = await fetch('/api/programs');
+        const response = await fetch('https://backend.thanawy.com/programs');
         if (!response.ok) {
           throw new Error(`API error: ${response.status}`);
         }

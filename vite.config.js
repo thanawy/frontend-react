@@ -5,13 +5,14 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
-    proxy: {
-      "/api": {
-        target: "https://backend.thanawy.com",
-        changeOrigin: true,
-        secure: false,
-        rewrite: (path) => path.replace(/^\/api/, ""),
-      },
-    },
+    port: 3000,
+    // proxy: {
+    //   "/api": {
+    //     target: "https://backend.thanawy.com",
+    //     changeOrigin: false,
+    //     secure: false,
+    //     rewrite: (path) => path.replace(/^\/api/, ""),
+    //   },
+    // },
   },
 });
