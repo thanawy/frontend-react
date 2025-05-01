@@ -10,9 +10,8 @@ export default defineConfig({
         target: "https://backend.thanawy.com",
         changeOrigin: true,
         secure: false,
-        rewrite: (path) => path.replace(/^\/api/, ""),
+        rewrite: (path) => path.replace(/^\/api/, "https://backend.thanawy.com"),
         headers: {
-          // يمكن إضافة هيدرات إضافية هنا إذا لزم الأمر
           "X-Requested-With": "XMLHttpRequest",
           "Accept": "application/json",
         }

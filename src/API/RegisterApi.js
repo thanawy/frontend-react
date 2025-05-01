@@ -1,37 +1,17 @@
-// API/RegisterApi.js
+// 1. التعديل الأول - تحديث RegisterApi.js
 
+// API/RegisterApi.js
 import axios from 'axios';
 
 // إنشاء نسخة من axios مع الإعدادات الأساسية
 const apiClient = axios.create({
-  baseURL: '/api',
+  // استخدام الـ proxy المُعرف في vite.config.js
+  baseURL: '/api',  
   headers: {
     'Content-Type': 'application/json',
   },
   timeout: 15000
 });
-
-// إضافة interceptor للمصادقة
-apiClient.interceptors.request.use(config => {
-  const token = localStorage.getItem('authToken');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-// إضافة interceptor للتعامل مع الأخطاء
-apiClient.interceptors.response.use(
-  response => response,
-  error => {
-    if (error.response?.status === 403) {
-      console.error('صلاحية الوصول منتهية، يرجى تسجيل الدخول مرة أخرى');
-      localStorage.removeItem('authToken');
-      window.location.href = '/login';
-    }
-    return Promise.reject(error);
-  }
-);
 
 /**
  * تسجيل مستخدم جديد
@@ -75,15 +55,12 @@ export const register = async (userData) => {
 export const verifyEmail = async (code) => {
   try {
     const email = localStorage.getItem('registeredEmail');
-    const token = localStorage.getItem('authToken');
     
     console.log('بيانات التحقق:', { code, email });
     
     const response = await apiClient.post('/auth/verify-digit', { 
       code,
       email
-    }, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {}
     });
     
     console.log('استجابة التحقق:', response.data);
@@ -94,8 +71,8 @@ export const verifyEmail = async (code) => {
   } catch (error) {
     console.error('خطأ في التحقق من البريد الإلكتروني:', error);
     
-    if (error.response?.status === 403) {
-      throw new Error('صلاحية الوصول منتهية، يرجى تسجيل الدخول مرة أخرى');
+    if (error.response) {
+      console.error('تفاصيل الخطأ:', error.response.data);
     }
     
     throw error;
@@ -110,7 +87,6 @@ export const verifyEmail = async (code) => {
 export const resendVerificationCode = async (email) => {
   try {
     const userEmail = email || localStorage.getItem('registeredEmail');
-    const token = localStorage.getItem('authToken');
     
     if (!userEmail) {
       throw new Error('البريد الإلكتروني غير متوفر، يرجى إعادة تسجيل الدخول');
@@ -118,11 +94,7 @@ export const resendVerificationCode = async (email) => {
     
     console.log('إعادة إرسال الرمز إلى:', userEmail);
     
-    const response = await apiClient.post('/auth/resend-verification', { 
-      email: userEmail 
-    }, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {}
-    });
+    const response = await apiClient.post('/auth/resend-verification', { email: userEmail });
     
     console.log('استجابة إعادة الإرسال:', response.data);
     
@@ -134,6 +106,17 @@ export const resendVerificationCode = async (email) => {
       console.error('تفاصيل الخطأ:', error.response.data);
     }
     
+    throw error;
+  }
+};
+
+// إضافة وظيفة جديدة للحصول على البرامج
+export const getPrograms = async () => {
+  try {
+    const response = await apiClient.get('/programs');
+    return response.data;
+  } catch (error) {
+    console.error('خطأ في جلب البرامج:', error);
     throw error;
   }
 };

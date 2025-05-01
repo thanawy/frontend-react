@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, ChevronDown, ChevronUp } from "lucide-react";
 import { useFormik } from "formik";
-import * as Yup from 'yup';
+import * as Yup from 'yup';  // يمكنك إضافة مكتبة التحقق Yup إذا كانت متاحة
 import facebookIcon from "../../assets/icons/facebookIcon.svg";
 import googleIcon from "../../assets/icons/googleIcon.svg";
 
@@ -14,6 +14,7 @@ const RegistrationForm = ({ onSubmit, isPending, onNext }) => {
     setExpandEmailForm(!expandEmailForm);
   };
 
+  // تعريف مخطط التحقق (إذا كانت مكتبة Yup متاحة)
   const validationSchema = Yup?.object({
     email: Yup?.string().email("بريد إلكتروني غير صالح").required("البريد الإلكتروني مطلوب"),
     displayName: Yup?.string().required("الاسم مطلوب"),
@@ -41,11 +42,13 @@ const RegistrationForm = ({ onSubmit, isPending, onNext }) => {
     },
   });
 
+  // منع المستخدم من الانتقال للخطوة التالية بدون تسجيل
   const handleNextWithoutForm = () => {
     alert("الرجاء تسجيل بياناتك أولاً");
     setExpandEmailForm(true);
   };
 
+  // إظهار أخطاء التحقق
   const getFieldError = (fieldName) => {
     return formik.touched[fieldName] && formik.errors[fieldName] ? (
       <div className="text-red-500 text-xs mt-1">{formik.errors[fieldName]}</div>
@@ -60,11 +63,11 @@ const RegistrationForm = ({ onSubmit, isPending, onNext }) => {
       </div>
 
       <div className="flex flex-col gap-3 flex-1">
-        {/* Social login buttons - تم تعديلها لتكون عمودية عندما يكون الفورم مغلقاً */}
-        <div className={`flex ${expandEmailForm ? "flex-row" : "flex-col"} gap-2 transition-all duration-300`}>
+        {/* Social login buttons */}
+        <div className="flex gap-2">
           <button
             type="button"
-            className={`${expandEmailForm ? "flex-1" : "w-full"} border border-gray-300 rounded-lg py-2 flex items-center justify-center gap-1 text-gray-700 text-sm`}
+            className="flex-1 border border-gray-300 rounded-lg py-2 flex items-center justify-center gap-1 text-gray-700 text-sm"
           >
             <img src={facebookIcon} alt="facebookIcon" className="w-4 h-4" />
             <span>فيسبوك</span>
@@ -72,7 +75,7 @@ const RegistrationForm = ({ onSubmit, isPending, onNext }) => {
 
           <button
             type="button"
-            className={`${expandEmailForm ? "flex-1" : "w-full"} border border-gray-300 rounded-lg py-2 flex items-center justify-center gap-1 text-gray-700 text-sm`}
+            className="flex-1 border border-gray-300 rounded-lg py-2 flex items-center justify-center gap-1 text-gray-700 text-sm"
           >
             <img src={googleIcon} alt="google-icon" className="w-4 h-4" />
             <span>جوجل</span>
@@ -89,9 +92,9 @@ const RegistrationForm = ({ onSubmit, isPending, onNext }) => {
           {expandEmailForm ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </button>
 
-        {/* Email registration form - تم إضافة تأثير transition */}
-        <div className={`overflow-hidden transition-all duration-300 ${expandEmailForm ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"}`}>
-          <form onSubmit={formik.handleSubmit} className="flex flex-col gap-3 pt-3">
+        {/* Email registration form */}
+        <div className={`${expandEmailForm ? "block" : "hidden"}`}>
+          <form onSubmit={formik.handleSubmit} className="flex flex-col gap-3">
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="block text-sm mb-1">الاسم بالكامل</label>
@@ -229,7 +232,7 @@ const RegistrationForm = ({ onSubmit, isPending, onNext }) => {
           </form>
         </div>
 
-        {/* Continue button when form is closed */}
+        {/* Continue button when form is closed - تم تعديله ليطلب من المستخدم التسجيل أولاً */}
         {!expandEmailForm && (
           <button
             onClick={handleNextWithoutForm}
