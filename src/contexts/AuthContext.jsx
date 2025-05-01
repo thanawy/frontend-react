@@ -20,11 +20,16 @@ const PROGRAMS_DATA = [
 ];
 
 // إنشاء كائن axios مع الإعدادات الافتراضية
+const baseURL = import.meta.env.PROD
+  ? 'https://backend.thanawy.com'  // في البرودكشن
+  : '/api';                         // في التطوير
+
 const apiClient = axios.create({
-  baseURL: '/api', // سيتم استبداله بالبروكسي
+  baseURL,
   headers: {
     'Content-Type': 'application/json',
-  }
+  },
+  timeout: 15000,
 });
 
 export const AuthContext = createContext(null);
