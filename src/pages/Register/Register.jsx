@@ -244,7 +244,7 @@ const Register = () => {
 
   return (
     <div className="flex flex-col md:flex-row-reverse lg:h-dvh   w-full font-cairo px-4 py-4  lg:px-10 ">
-      <div className="hidden lg:block md:w-1/2 ">
+      <div className="hidden lg:block md:w-1/2  ">
         <CharacterSlider
           slides={sliderData}
           onBack={goToPreviousStep}
@@ -276,11 +276,11 @@ const Register = () => {
           </div>
         )}
 
-        <div className="flex-grow">
+        <div className="flex-">
           {renderStepContent()}
         </div>
 
-        <div className="text-center mt-4 mb-4 md:mt-6 md:mb-4">
+        <div className="text-center mt-4 mb-4 md:mt-6 md:mb-4 ">
           <span className="text-xs md:text-sm text-gray-500">لديك حساب؟</span>
           <a href="/login" className="text-xs md:text-sm text-purple-600 mr-1">
             تسجيل الدخول

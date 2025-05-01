@@ -16,7 +16,7 @@ const CharacterSlider = ({ slides = [], onBack, currentStep }) => {
   const currentSlideData = slides[currentSlide] || {};
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center p-6  relative font-cairo ">
+    <div className="w-full h-full flex flex-col items-center justify-center   relative font-cairo ">
       {/* Back button - Only show when not on first step */}
       {currentStep > 1 && (
         <button
