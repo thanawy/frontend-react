@@ -4,13 +4,16 @@
 import axios from 'axios';
 
 // إنشاء نسخة من axios مع الإعدادات الأساسية
+const baseURL = import.meta.env.PROD
+  ? 'https://backend.thanawy.com'  // في البرودكشن
+  : '/api';                         // في التطوير
+
 const apiClient = axios.create({
-  // استخدام الـ proxy المُعرف في vite.config.js
-  baseURL: '/api',  
+  baseURL,
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 15000
+  timeout: 15000,
 });
 
 /**
