@@ -6,7 +6,7 @@ import axios from 'axios';
 // إنشاء نسخة من axios مع الإعدادات الأساسية
 const baseURL = import.meta.env.PROD
   ? 'https://backend.thanawy.com'  // في البرودكشن
-  : '/https://backend.thanawy.com';                         // في التطوير
+  : '/api';                         // في التطوير
 
 const apiClient = axios.create({
   baseURL,
