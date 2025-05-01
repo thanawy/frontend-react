@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-
+// https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
@@ -10,12 +10,7 @@ export default defineConfig({
         target: "https://backend.thanawy.com",
         changeOrigin: true,
         secure: false,
-        rewrite: (path) => path.replace(/^\/api/, "https://backend.thanawy.com"),
-        headers: {
-          "X-Requested-With": "XMLHttpRequest",
-          "Accept": "application/json",
-          
-        }
+        rewrite: (path) => path.replace(/^\/api/, ""),
       },
     },
   },
