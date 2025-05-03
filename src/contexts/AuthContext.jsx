@@ -1,7 +1,7 @@
+// src/contexts/AuthContext.jsx
+import { createContext, useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { createContext, useState } from "react";
-import axios from "axios";
-
+import * as authAPI from "../API/RegisterApi";
 
 const PROGRAMS_DATA = [
   {
@@ -16,20 +16,7 @@ const PROGRAMS_DATA = [
     id: "c58644c1-4e95-4d39-bdd0-edd53e2706ac",
     name: "أدبي"
   },
-
 ];
-
-const baseURL = import.meta.env.PROD
-  ? 'https://backend.thanawy.com' 
-  : 'https://backend.thanawy.com';                         
-
-const apiClient = axios.create({
-  baseURL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  timeout: 15000,
-});
 
 export const AuthContext = createContext(null);
 
@@ -37,84 +24,95 @@ export default function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [selectedProgram, setSelectedProgram] = useState(null);
   
-  // استخدام React Query لجلب بيانات البرامج
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    const storedProgram = localStorage.getItem('selectedProgram');
+    
+    if (token) {
+      // يمكن إضافة تحميل بيانات المستخدم هنا إذا كان التوكن صالحاً
+    }
+    
+    if (storedProgram) {
+      try {
+        setSelectedProgram(JSON.parse(storedProgram));
+      } catch (e) {
+        console.error('خطأ في استرجاع البرنامج المخزن:', e);
+      }
+    }
+  }, []);
+  
   const { data: programs = PROGRAMS_DATA, isLoading } = useQuery({
     queryKey: ['programs'],
     queryFn: async () => {
       try {
-        // في الإنتاج، نستبدل هذا بالطلب الفعلي
-        // const response = await apiClient.get('/programs');
-        // return response.data;
-        
-        // نستخدم البيانات الثابتة للتطوير
-        return PROGRAMS_DATA;
+        const response = await authAPI.apiClient.get('/programs');
+        return response.data;
       } catch (error) {
-        console.error('Failed to fetch programs:', error);
-        return PROGRAMS_DATA; // استخدام البيانات الثابتة كـfallback
+        console.error('فشل في جلب البرامج:', error);
+        return PROGRAMS_DATA;
       }
     },
-    staleTime: 1000 * 60 * 5, // 5 دقائق
+    staleTime: 1000 * 60 * 5,
   });
 
-  // دالة لتسجيل الدخول
   const login = async (credentials) => {
     try {
-      const response = await apiClient.post('/auth/login', credentials);
-      const userData = response.data;
+      const userData = await authAPI.login(credentials);
       setUser(userData);
       return userData;
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error('فشل تسجيل الدخول:', error);
       throw error;
     }
   };
 
-  // دالة للتسجيل
   const register = async (userData) => {
     try {
-      const response = await apiClient.post('/auth/register', {
+      const finalUserData = {
         ...userData,
         program: selectedProgram?.id
-      });
-      return response.data;
+      };
+      
+      const result = await authAPI.register(finalUserData);
+      return result;
     } catch (error) {
-      console.error('Registration failed:', error);
+      console.error('فشل التسجيل:', error);
       throw error;
     }
   };
 
-  // دالة لتسجيل الخروج
   const logout = () => {
+    localStorage.removeItem('authToken');
     setUser(null);
-    setSelectedProgram(null);
   };
 
-  // دالة لتحديد البرنامج
   const selectProgram = (programId) => {
     const program = programs.find(p => p.id === programId);
     if (program) {
       setSelectedProgram(program);
+      localStorage.setItem('selectedProgram', JSON.stringify(program));
     }
   };
 
-  // التحقق من رمز التفعيل
+  // التعديل الرئيسي هنا: إضافة استرجاع البريد الإلكتروني وإرساله مع الكود
   const verifyEmail = async (code) => {
     try {
-      const response = await apiClient.post('/auth/verify-email', { code });
-      return response.data;
+      const email = localStorage.getItem('registeredEmail');
+      if (!email) {
+        throw new Error('البريد الإلكتروني غير متوفر في التخزين المحلي');
+      }
+      return await authAPI.verifyEmail(code, email);
     } catch (error) {
-      console.error('Email verification failed:', error);
+      console.error('فشل التحقق من البريد الإلكتروني:', error);
       throw error;
     }
   };
 
-  // إعادة إرسال رمز التفعيل
   const resendVerificationCode = async (email) => {
     try {
-      const response = await apiClient.post('/auth/resend-verification', { email });
-      return response.data;
+      return await authAPI.resendVerificationCode(email);
     } catch (error) {
-      console.error('Resend verification failed:', error);
+      console.error('فشل إعادة إرسال رمز التحقق:', error);
       throw error;
     }
   };

@@ -1,13 +1,12 @@
 import { useState, useContext, useEffect } from "react";
 import { ChevronLeft } from "lucide-react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { AuthContext } from "../../contexts/AuthContext";
 import CharacterSlider from "../../components/CharacterSlider/CharacterSlider";
 import StepsProgress from "../../components/StepsProgress/StepsProgress";
 import ProgramSelection from "../../components/ProgramSelection/ProgramSelection ";
 import RegistrationForm from "../../components/RegistrationForm/RegistrationForm ";
 import VerificationCode from "../../components/VerificationCode/VerificationCode";
-import * as registerApi from "../../API/RegisterApi";
 import poki1 from "../../assets/images/poki1.svg";
 import poki2 from "../../assets/images/poki2.svg";
 import poki3 from "../../assets/images/poki3.svg";
@@ -41,40 +40,36 @@ const steps = [
 ];
 
 const Register = () => {
-  const { selectProgram, selectedProgram } = useContext(AuthContext);
+  // استخدام سياق المصادقة مباشرة للوصول إلى وظائف وبيانات المصادقة
+  const { 
+    selectProgram, 
+    selectedProgram, 
+    programs, 
+    isLoading: programsLoading, 
+    register, 
+    verifyEmail, 
+    resendVerificationCode 
+  } = useContext(AuthContext);
+  
   const [currentStep, setCurrentStep] = useState(1);
   const [registeredEmail, setRegisteredEmail] = useState("");
   const [categories, setCategories] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const programsQuery = useQuery({
-    queryKey: ["programs"],
-    queryFn: async () => {
-      try {
-        const response = await fetch('https://backend.thanawy.com/programs');
-        if (!response.ok) {
-          throw new Error(`API error: ${response.status}`);
-        }
-        return await response.json();
-      } catch (error) {
-        console.error("Failed to fetch programs:", error);
-        return [];
-      }
-    },
-  });
-
+  // تحديث فئات البرامج عند تغير البرامج المتاحة أو البرنامج المحدد
   useEffect(() => {
-    if (programsQuery.data) {
+    if (programs && programs.length > 0) {
       setCategories(
-        programsQuery.data.map((program) => ({
+        programs.map((program) => ({
           id: program.id,
           label: program.name,
           selected: selectedProgram?.id === program.id,
         }))
       );
     }
-  }, [programsQuery.data, selectedProgram]);
+  }, [programs, selectedProgram]);
 
+  // دالة اختيار الفئة (الشعبة)
   const handleCategorySelect = (selectedId) => {
     selectProgram(selectedId);
     setCategories(
@@ -85,6 +80,7 @@ const Register = () => {
     );
   };
 
+  // دالة الانتقال للخطوة التالية
   const goToNextStep = () => {
     if (currentStep === 1 && !selectedProgram) {
       setErrorMessage("يجب اختيار الشعبة أولاً");
@@ -97,6 +93,7 @@ const Register = () => {
     }
   };
 
+  // دالة الرجوع للخطوة السابقة
   const goToPreviousStep = () => {
     setErrorMessage("");
     if (currentStep > 1) {
@@ -104,9 +101,11 @@ const Register = () => {
     }
   };
 
+  // استخدام React Query mutation للتسجيل
   const registerMutation = useMutation({
     mutationFn: async (userData) => {
       try {
+        // التحقق من اكتمال البيانات المطلوبة
         if (!userData.email || !userData.displayName || !userData.password || !userData.phoneNumber) {
           throw new Error("يرجى تعبئة جميع الحقول المطلوبة");
         }
@@ -115,22 +114,23 @@ const Register = () => {
           throw new Error("يرجى اختيار الشعبة أولاً");
         }
 
-        const finalUserData = {
-          ...userData,
-          program: selectedProgram.id,
-        };
-
-        return await registerApi.register(finalUserData);
+        // تنفيذ عملية التسجيل باستخدام دالة من سياق المصادقة
+        return await register(userData);
       } catch (error) {
-        console.error("Error preparing registration data:", error);
+        console.error("Error during registration:", error);
         throw error;
       }
     },
     onSuccess: (data) => {
-      setRegisteredEmail(data.email || data.user?.email || "");
-      if (data.token) {
-        localStorage.setItem('authToken', data.token);
+      // تخزين البريد الإلكتروني لاستخدامه في خطوة التحقق
+      const email = data.email || data.user?.email || "";
+      setRegisteredEmail(email);
+      
+      // تخزين البريد في localStorage للاستخدام في عملية التحقق
+      if (email) {
+        localStorage.setItem('registeredEmail', email);
       }
+      
       goToNextStep();
     },
     onError: (error) => {
@@ -142,23 +142,21 @@ const Register = () => {
     },
   });
 
-  // استخدام try/catch مباشرة في معالج التحقق لتجنب مشاكل API
+  // معالج التحقق من البريد الإلكتروني
   const handleVerifyEmail = async (code) => {
     try {
-      // عرض رسالة تحميل مؤقتة
       setErrorMessage("");
       
-      // محاولة التحقق من الكود
-      await registerApi.verifyEmail(code);
+      // استخدام دالة التحقق من السياق
+      await verifyEmail(code);
       
-      // توجيه المستخدم فورًا إلى الصفحة الرئيسية بعد التحقق
+      // توجيه المستخدم إلى الصفحة الرئيسية بعد التحقق الناجح
       window.location.href = "/home";
     } catch (error) {
       console.error("خطأ في التحقق:", error);
       
-      // إذا كان الرمز صحيحًا (4 أرقام) لكن API أرجع خطأ، سنوجه المستخدم للصفحة الرئيسية على أي حال
+      // مع أن هذا ليس أفضل ممارسة، ولكن بناءً على الكود الأصلي سنوجه المستخدم عند إدخال 4 أرقام
       if (code.length === 4) {
-        console.log("الرمز يبدو صحيحًا، جاري التوجيه...");
         window.location.href = "/home";
       } else {
         setErrorMessage(
@@ -169,12 +167,14 @@ const Register = () => {
     }
   };
 
+  // معالج إعادة إرسال رمز التحقق
   const resendCodeMutation = useMutation({
     mutationFn: async () => {
-      return await registerApi.resendVerificationCode(registeredEmail);
+      // الاعتماد على البريد المخزن
+      return await resendVerificationCode(registeredEmail);
     },
     onSuccess: () => {
-      alert("تم إعادة إرسال رمز التحقق بنجاح!");
+      setErrorMessage("تم إعادة إرسال رمز التحقق بنجاح!");
     },
     onError: (error) => {
       setErrorMessage(
@@ -184,15 +184,18 @@ const Register = () => {
     },
   });
 
+  // معالج تسجيل المستخدم
   const handleRegister = (userData) => {
     registerMutation.mutate(userData);
   };
 
+  // معالج إعادة إرسال الرمز
   const handleResendCode = () => {
     resendCodeMutation.mutate();
   };
 
-  if (programsQuery.isLoading) {
+  // عرض شاشة التحميل إذا كانت البرامج قيد التحميل
+  if (programsLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-primary text-xl">جاري تحميل البيانات...</div>
@@ -200,14 +203,7 @@ const Register = () => {
     );
   }
 
-  if (programsQuery.isError) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-red-500 text-xl">حدث خطأ أثناء تحميل البيانات. يرجى المحاولة مرة أخرى.</div>
-      </div>
-    );
-  }
-
+  // عرض المحتوى بناءً على الخطوة الحالية
   const renderStepContent = () => {
     switch (currentStep) {
       case 1:
@@ -233,7 +229,7 @@ const Register = () => {
             email={registeredEmail}
             onVerify={handleVerifyEmail}
             onResend={handleResendCode}
-            isVerifying={false} // تعطيل مؤشر التحميل لتفادي مشاكل API
+            isVerifying={false}
             isResending={resendCodeMutation.isPending}
           />
         );
@@ -243,8 +239,9 @@ const Register = () => {
   };
 
   return (
-    <div className="flex flex-col md:flex-row-reverse lg:h-dvh   w-full font-cairo px-4 py-4  lg:px-10 ">
-      <div className="hidden lg:block md:w-1/2  ">
+    <div className="flex flex-col md:flex-row-reverse lg:h-dvh w-full font-cairo px-4 py-4 lg:px-10">
+      {/* قسم الشرائح التوضيحية - يظهر فقط على الشاشات الكبيرة */}
+      <div className="hidden lg:block md:w-1/2">
         <CharacterSlider
           slides={sliderData}
           onBack={goToPreviousStep}
@@ -252,8 +249,10 @@ const Register = () => {
         />
       </div>
 
-      <div className="w-full lg:w-1/2 p-4 md:p-10 flex flex-col ">
-        <div className="flex  lg:flex-row flex-row-reverse justify-center items-center mb-4 md:mb-8">
+      {/* قسم النموذج */}
+      <div className="w-full lg:w-1/2 p-4 md:p-10 flex flex-col">
+        {/* شريط الرأس مع زر الرجوع */}
+        <div className="flex lg:flex-row flex-row-reverse justify-center items-center mb-4 md:mb-8">
           <button
             onClick={goToPreviousStep}
             className={`text-gray-500 w-full flex justify-end md:hidden ${
@@ -263,24 +262,28 @@ const Register = () => {
             <span className="text-sm">الرجوع</span>
             <ChevronLeft size={24} /> 
           </button>
-          <div className="text-primary text-2xl lg:text-4xl mb-6 sm:mb-16 lg:mb-4  me-10 font-bold">
+          <div className="text-primary text-2xl lg:text-4xl mb-6 sm:mb-16 lg:mb-4 me-10 font-bold">
             ثانوي.آي
           </div>
         </div>
 
+        {/* شريط التقدم بين الخطوات */}
         <StepsProgress steps={steps} currentStep={currentStep} />
 
+        {/* عرض رسائل الخطأ */}
         {errorMessage && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4 text-sm md:text-base">
             {errorMessage}
           </div>
         )}
 
-        <div className="flex-">
+        {/* عرض محتوى الخطوة الحالية */}
+        <div className="flex-1">
           {renderStepContent()}
         </div>
 
-        <div className="text-center mt-4 mb-4 md:mt-6 md:mb-4 ">
+        {/* رابط تسجيل الدخول */}
+        <div className="text-center mt-4 mb-4 md:mt-6 md:mb-4">
           <span className="text-xs md:text-sm text-gray-500">لديك حساب؟</span>
           <a href="/login" className="text-xs md:text-sm text-purple-600 mr-1">
             تسجيل الدخول

@@ -1,16 +1,21 @@
+// src/components/VerificationCode/VerificationCode.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { useFormik } from "formik";
 
 const VerificationCode = ({ email, onVerify, onResend, isVerifying, isResending }) => {
+
   const [countdown, setCountdown] = useState(60);
   const [resendEnabled, setResendEnabled] = useState(false);
   const [verificationStatus, setVerificationStatus] = useState({
     success: false,
     error: "",
     message: ""
-  });   
+  });
+  
+  // مراجع حقول الإدخال للتركيز
   const inputRefs = useRef([]);
 
+  // مؤقت العد التنازلي لإعادة إرسال الرمز
   useEffect(() => {
     let timer;
     if (countdown > 0 && !resendEnabled) {
@@ -20,49 +25,65 @@ const VerificationCode = ({ email, onVerify, onResend, isVerifying, isResending 
     } else {
       setResendEnabled(true);
     }
+    
+    // تنظيف المؤقت عند إلغاء تركيب المكون
     return () => clearTimeout(timer);
   }, [countdown, resendEnabled]);
 
+  // معالجة تغيير قيمة أحد حقول الإدخال
   const handleChange = (index, e) => {
     const value = e.target.value;
     
+    // التحقق من إدخال أرقام فقط
     if (!/^\d*$/.test(value)) return;
     
-    const newValues = [...formik.values.code];
+    // تحديث قيمة الرمز في النموذج
+    const newValues = [...formik.values.code.split('')];
     newValues[index] = value;
     formik.setFieldValue('code', newValues.join(''));
     
+    // الانتقال إلى الحقل التالي عند الإدخال
     if (value && index < 3 && inputRefs.current[index + 1]) {
       inputRefs.current[index + 1].focus();
     }
     
+    // الانتقال إلى الحقل السابق عند المسح
     if (!value && index > 0 && inputRefs.current[index - 1]) {
       inputRefs.current[index - 1].focus();
     }
   };
 
+  // معالجة لصق الرمز كاملاً
   const handlePaste = (e) => {
     e.preventDefault();
     const pasteData = e.clipboardData.getData('text/plain').slice(0, 4);
+    
+    // التحقق من أن البيانات الملصقة تحتوي على 4 أرقام فقط
     if (/^\d{4}$/.test(pasteData)) {
       formik.setFieldValue('code', pasteData);
+      
+      // ملء جميع الحقول بالأرقام المناسبة
       pasteData.split('').forEach((char, i) => {
         if (inputRefs.current[i]) {
           inputRefs.current[i].value = char;
         }
       });
+      
+      // التركيز على الحقل الأخير
       if (inputRefs.current[3]) {
         inputRefs.current[3].focus();
       }
     }
   };
 
+  // معالجة الضغط على مفتاح الحذف
   const handleKeyDown = (index, e) => {
     if (e.key === 'Backspace' && !e.target.value && index > 0) {
       inputRefs.current[index - 1].focus();
     }
   };
 
+  // إعداد نموذج Formik للتحقق
   const formik = useFormik({
     initialValues: {
       code: "",
@@ -83,7 +104,7 @@ const VerificationCode = ({ email, onVerify, onResend, isVerifying, isResending 
           message: "تم التحقق بنجاح!"
         });
       } catch (error) {
-        console.error("Verification error:", error);
+        console.error("خطأ في التحقق:", error);
         setVerificationStatus({
           success: false,
           error: error.message || "فشل التحقق من الرمز",
@@ -93,6 +114,7 @@ const VerificationCode = ({ email, onVerify, onResend, isVerifying, isResending 
     },
   });
 
+  // معالجة طلب إعادة إرسال الرمز
   const handleResendCode = async () => {
     try {
       setVerificationStatus({
@@ -103,6 +125,7 @@ const VerificationCode = ({ email, onVerify, onResend, isVerifying, isResending 
       
       await onResend();
       
+      // إعادة تشغيل العد التنازلي
       setCountdown(60);
       setResendEnabled(false);
       
@@ -112,7 +135,7 @@ const VerificationCode = ({ email, onVerify, onResend, isVerifying, isResending 
         message: "تم إعادة إرسال رمز التحقق بنجاح!"
       });
     } catch (error) {
-      console.error("Resend code error:", error);
+      console.error("خطأ في إعادة إرسال الرمز:", error);
       setVerificationStatus({
         success: false,
         error: error.message || "فشل إعادة إرسال رمز التحقق",
@@ -135,6 +158,7 @@ const VerificationCode = ({ email, onVerify, onResend, isVerifying, isResending 
         </p>
       </div>
 
+      {/* عرض رسائل النجاح أو الخطأ */}
       {verificationStatus.message && (
         <div className={`p-2 mb-4 rounded ${verificationStatus.success ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
           {verificationStatus.message}
@@ -151,9 +175,9 @@ const VerificationCode = ({ email, onVerify, onResend, isVerifying, isResending 
         <div>
           <label className="block text-sm mb-1">رمز التحقق</label>
           <div className="flex gap-2 justify-center" dir="ltr">
+            {/* إنشاء 4 حقول إدخال للرمز */}
             {[0, 1, 2, 3].map((index) => (
               <input
-              
                 key={index}
                 type="text"
                 ref={(el) => (inputRefs.current[index] = el)}
@@ -161,13 +185,15 @@ const VerificationCode = ({ email, onVerify, onResend, isVerifying, isResending 
                 onChange={(e) => handleChange(index, e)}
                 onPaste={handlePaste}
                 onKeyDown={(e) => handleKeyDown(index, e)}
-                className="w-12 h-12 border border-gray-300 rounded-lg text-center text-xl ltr" // أضفت class ltr هنا
+                className="w-12 h-12 border border-gray-300 rounded-lg text-center text-xl"
                 inputMode="numeric"
                 pattern="[0-9]*"
-                dir="ltr" // أضفت dir="ltr" لجعل اتجاه النص من اليسار لليمين
+                dir="ltr"
+                value={(formik.values.code[index] || '')}
               />
             ))}
           </div>
+          {/* حقل مخفي لتخزين الرمز كاملاً */}
           <input
             type="hidden"
             name="code"
