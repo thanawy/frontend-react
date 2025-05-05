@@ -2,11 +2,10 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.PROD ? 'https://backend.thanawy.com' : 'https://backend.thanawy.com',
+  baseURL: 'https://backend.thanawy.com',
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 15000
 });
 
 export const register = async (userData) => {

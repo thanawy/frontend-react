@@ -32,8 +32,8 @@ import { Link } from "react-router-dom";
       </button>
     );
   }
-   
 
+  // Default button
   return (
     <button className={styles[type]} disabled={disabled}>
       {children}

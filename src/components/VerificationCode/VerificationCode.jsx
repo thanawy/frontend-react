@@ -1,6 +1,7 @@
 // src/components/VerificationCode/VerificationCode.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { useFormik } from "formik";
+import SuccessModal from "../SuccessModal/SuccessModal";
 
 const VerificationCode = ({ email, onVerify, onResend, isVerifying, isResending }) => {
 
@@ -11,6 +12,7 @@ const VerificationCode = ({ email, onVerify, onResend, isVerifying, isResending 
     error: "",
     message: ""
   });
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   
   // مراجع حقول الإدخال للتركيز
   const inputRefs = useRef([]);
@@ -103,6 +105,9 @@ const VerificationCode = ({ email, onVerify, onResend, isVerifying, isResending 
           error: "",
           message: "تم التحقق بنجاح!"
         });
+        
+        // عرض المودال بدلاً من التوجيه المباشر إلى الصفحة الرئيسية
+        setShowSuccessModal(true);
       } catch (error) {
         console.error("خطأ في التحقق:", error);
         setVerificationStatus({
@@ -146,6 +151,9 @@ const VerificationCode = ({ email, onVerify, onResend, isVerifying, isResending 
 
   return (
     <div className="flex flex-col h-full">
+      {/* مودال النجاح */}
+      <SuccessModal isOpen={showSuccessModal} />
+
       <div className="mb-6">
         <p className="font-bold text-xl mb-2">التحقق من البريد الإلكتروني</p>
         <p className="text-gray-500 text-sm mb-4">
@@ -159,7 +167,7 @@ const VerificationCode = ({ email, onVerify, onResend, isVerifying, isResending 
       </div>
 
       {/* عرض رسائل النجاح أو الخطأ */}
-      {verificationStatus.message && (
+      {verificationStatus.message && !showSuccessModal && (
         <div className={`p-2 mb-4 rounded ${verificationStatus.success ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
           {verificationStatus.message}
         </div>

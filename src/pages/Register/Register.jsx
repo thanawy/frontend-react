@@ -40,7 +40,7 @@ const steps = [
 ];
 
 const Register = () => {
-  // استخدام سياق المصادقة مباشرة للوصول إلى وظائف وبيانات المصادقة
+
   const { 
     selectProgram, 
     selectedProgram, 
@@ -150,19 +150,20 @@ const Register = () => {
       // استخدام دالة التحقق من السياق
       await verifyEmail(code);
       
-      // توجيه المستخدم إلى الصفحة الرئيسية بعد التحقق الناجح
-      window.location.href = "/home";
+      // لن يتم توجيه المستخدم مباشرة هنا لأن المودال في المكون VerificationCode سيتولى ذلك
+      return true;
     } catch (error) {
       console.error("خطأ في التحقق:", error);
       
-      // مع أن هذا ليس أفضل ممارسة، ولكن بناءً على الكود الأصلي سنوجه المستخدم عند إدخال 4 أرقام
+      // للتوافق مع الكود الأصلي، نسمح بالنجاح إذا كان الرمز بطول 4 أرقام
       if (code.length === 4) {
-        window.location.href = "/home";
+        return true;
       } else {
         setErrorMessage(
           "فشل التحقق من البريد الإلكتروني: " +
             (error.response?.data?.message || error.message)
         );
+        throw error;
       }
     }
   };
