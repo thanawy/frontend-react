@@ -50,7 +50,7 @@ export default function Navbar() {
       to: "/ranking",
     },
     {
-      key: "subscription ",
+      key: "subscription",
       icon: subscribtion,
       lightIcon: subscribtionLight,
       label: "الاشتراكات",
@@ -75,8 +75,8 @@ export default function Navbar() {
   return (
     <div className="w-full relative z-50">
       <div className="navbar w-full bg-base-100 shadow-sm transition-all duration-300">
-        {/* Dropdown Menu for Mobile */}
-        <div className="dropdown block lg:hidden">
+        {/* Dropdown Menu for Mobile Only */}
+        <div className="dropdown md:hidden">
           <div tabIndex={0} role="button" className="btn border-none">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -95,7 +95,7 @@ export default function Navbar() {
           </div>
           <ul
             tabIndex={0}
-            className="menu menu-sm dropdown-content bg-white rounded-lg z-50 mt-2 w-96 h-screen p-2 gap-6 shadow"
+            className="menu menu-sm dropdown-content bg-white rounded-lg z-50 mt-2 w-64 sm:w-96 h-screen p-2 gap-6 shadow"
           >
             {navItems.map((item, i) => (
               <li key={i} onClick={() => setActiveItem(item.key)}>
@@ -125,7 +125,7 @@ export default function Navbar() {
           <p className="font-bold hidden xl:block md:text-[24px] leading-[32px] text-[#0B011E]">
             المواد الدراسية
           </p>
-          <p className="block xl:hidden text-primary font-bold">ثانوي</p>
+          <p className="block sm:hidden text-primary font-bold">ثانوي</p>
         </div>
 
         {/* Right side */}

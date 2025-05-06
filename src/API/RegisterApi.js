@@ -5,7 +5,10 @@ const apiClient = axios.create({
   baseURL: 'https://backend.thanawy.com',
   headers: {
     'Content-Type': 'application/json',
+  
   },
+  credentials: 'include',
+  withCredentials: true,
 });
 
 export const register = async (userData) => {
@@ -33,17 +36,17 @@ export const register = async (userData) => {
 };
 
 // التعديل الرئيسي هنا: إضافة معامل email
-export const verifyEmail = async (code, email) => {
+export const verifyEmail = async (code) => {
   try {
-    if (!code || !email) {
+    if (!code ) {
       throw new Error('رمز التحقق والبريد الإلكتروني مطلوبان');
     }
 
-    console.log('بيانات التحقق:', { code, email });
+    console.log('بيانات التحقق:', { code });
     
     const response = await apiClient.post('/auth/verify-digit', { 
       code,
-      email
+      
     });
     
     console.log('استجابة التحقق:', response.data);

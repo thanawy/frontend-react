@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Menu } from "lucide-react";
 import home from "../../assets/icons/home.svg";
@@ -18,6 +18,26 @@ import robot from "../../assets/images/robot.svg";
 
 export default function SideBar({ isOpen, setIsOpen }) {
   const [activeItem, setActiveItem] = useState("home");
+  
+  // Set default sidebar state based on screen size
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1280) { // xl breakpoint
+        setIsOpen(true); // Default open for laptop/desktop
+      } else if (window.innerWidth >= 768) { // md breakpoint
+        setIsOpen(false); // Default closed for tablet
+      }
+    };
+    
+    // Set initial state
+    handleResize();
+    
+    // Add resize listener
+    window.addEventListener('resize', handleResize);
+    
+    // Clean up
+    return () => window.removeEventListener('resize', handleResize);
+  }, [setIsOpen]);
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
@@ -77,16 +97,16 @@ export default function SideBar({ isOpen, setIsOpen }) {
 
   return (
     <div
-      className={`h-auto min-h-screen xl:block hidden ${
-        isOpen ? "w-64" : "w-24"
-      }  transition-all duration-300 border-l border-gray-200`}
+      className={`h-auto min-h-screen md:block hidden bg-white ${
+        isOpen ? "w-48" : "w-[90px]"
+      } transition-all duration-300`}
     >
       {/* Header */}
       <div className="flex items-center justify-center mb-2">
-        <div className="flex flex-row-reverse justify-center w-full items-center ">
+        <div className="flex flex-row-reverse justify-center mt-[16px] w-full items-center">
           <button
             onClick={toggleSidebar}
-            className="text-primary font-bold text-[32px] rtl text-start w-full"
+            className="text-primary font-bold text-[20px] pb-4 rtl    ms-2 w-full"
           >
             ثانوي
           </button>
@@ -99,20 +119,20 @@ export default function SideBar({ isOpen, setIsOpen }) {
       </div>
 
       {/* Navigation Menu */}
-      <div className={`flex-grow ${isOpen ? "" : "flex flex-col items-center"}`}>
-        <ul className={`${isOpen ? "text-center" : "w-full"}`}>
+      <div className={`flex-grow ${isOpen ? "mt-[-6px]" : "flex flex-col items-center "}`}>
+        <ul className={`${isOpen ? "text-center " : "w-full"}`}>
           {navItems.slice(0, 6).map((item) => (
             <li key={item.key} onClick={() => setActiveItem(item.key)}>
               <Link
                 to={item.to}
-                className={`flex items-center cursor-pointer ${
+                className={`flex items-center cursor-pointer   ${
                   activeItem === item.key
                     ? isOpen
                       ? "flex-row-reverse justify-end ps-4 bg-[#8D55F9] rounded-r-md ms-4 gap-4 py-2"
-                      : "justify-center bg-primary rounded-lg py-3"
+                      : "justify-center bg-primary rounded-lg py-3 mx-4"
                     : isOpen
                     ? "justify-end gap-2 flex-row-reverse p-3"
-                    : "justify-center p-3"
+                    : "justify-center p-3 mb-8 mt-5"
                 }`}
               >
                 <span
