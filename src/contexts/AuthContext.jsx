@@ -3,6 +3,10 @@ import { createContext, useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import * as authAPI from "../API/RegisterApi";
 
+// تشفير وفك تشفير بيانات المستخدم
+import AES from "crypto-js/aes";
+import Utf8 from "crypto-js/enc-utf8";
+
 export let AuthContext = createContext(null);
 
 export default function AuthProvider({ children }) {
@@ -10,34 +14,38 @@ export default function AuthProvider({ children }) {
   const [selectedProgram, setSelectedProgram] = useState(null);
   const [isAuthenticating, setIsAuthenticating] = useState(true);
 
-  // التحقق من وجود توكن المصادقة وبيانات المستخدم عند تحميل التطبيق
+  // التحقق من الجلسة من الباك باستخدام /auth/status
   useEffect(() => {
     const checkAuthStatus = async () => {
-      const authToken = localStorage.getItem("authToken");
-      if (authToken) {
-        try {
-          // إضافة التوكن إلى رأس الطلبات الافتراضي
-          authAPI.apiClient.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
-          
-          // استرجاع بيانات المستخدم
-          const response = await authAPI.apiClient.get("/auth/me");
-          
-          if (response.data) {
-            setUser(response.data);
-          }
-        } catch (error) {
-          console.error("فشل في التحقق من حالة المصادقة:", error);
-          localStorage.removeItem("authToken");
-          delete authAPI.apiClient.defaults.headers.common['Authorization'];
+      try {
+        const response = await authAPI.getSessionStatus();
+
+        if (response.user) {
+          setUser(response.user);
+
+          // اختياري: تخزين مشفر
+          const encrypted = AES.encrypt(
+            JSON.stringify(response.user),
+            "your-secret-key"
+          ).toString();
+          localStorage.setItem("encryptedUser", encrypted);
+        } else {
+          setUser(null);
+          localStorage.removeItem("encryptedUser");
         }
+      } catch (error) {
+        console.error("فشل في التحقق من حالة الجلسة:", error);
+        setUser(null);
+        localStorage.removeItem("encryptedUser");
       }
+
       setIsAuthenticating(false);
     };
 
     checkAuthStatus();
   }, []);
 
-  // استرجاع البرنامج المحدد من التخزين المحلي
+  // استرجاع البرنامج من localStorage
   useEffect(() => {
     const storedProgram = localStorage.getItem("selectedProgram");
     if (storedProgram) {
@@ -49,7 +57,7 @@ export default function AuthProvider({ children }) {
     }
   }, []);
 
-  // استرجاع البرامج المتاحة
+  // جلب البرامج المتاحة
   const { data: programs, isLoading } = useQuery({
     queryKey: ["programs"],
     queryFn: async () => {
@@ -68,13 +76,17 @@ export default function AuthProvider({ children }) {
   const login = async (credentials) => {
     try {
       const userData = await authAPI.login(credentials);
-      
-      // إضافة التوكن إلى رأس الطلبات الافتراضي
-      if (userData.token) {
-        authAPI.apiClient.defaults.headers.common['Authorization'] = `Bearer ${userData.token}`;
-      }
-      
+
+      // الكوكي يتم حفظه تلقائيًا من الباك
       setUser(userData.user || userData);
+
+      // تخزين البيانات مشفر (اختياري)
+      const encryptedUser = AES.encrypt(
+        JSON.stringify(userData.user || userData),
+        "your-secret-key"
+      ).toString();
+      localStorage.setItem("encryptedUser", encryptedUser);
+
       return userData;
     } catch (error) {
       console.error("فشل تسجيل الدخول:", error);
@@ -100,16 +112,11 @@ export default function AuthProvider({ children }) {
   // التحقق من البريد الإلكتروني
   const verifyEmail = async (code) => {
     try {
-      const email = localStorage.getItem('registeredEmail');
-      if (!email) {
-        throw new Error("البريد الإلكتروني غير متوفر");
-      }
-      const result = await authAPI.verifyEmail(code, email);
+      const email = localStorage.getItem("registeredEmail");
+      if (!email) throw new Error("البريد الإلكتروني غير متوفر");
 
-      // نتأكد أن success = true فعلاً
-      if (!result.success) {
-        throw new Error(result.message || "رمز التحقق غير صحيح");
-      }
+      const result = await authAPI.verifyEmail(code, email);
+      if (!result.success) throw new Error(result.message || "رمز التحقق غير صحيح");
 
       return result;
     } catch (error) {
@@ -130,9 +137,9 @@ export default function AuthProvider({ children }) {
 
   // تسجيل الخروج
   const logout = () => {
-    localStorage.removeItem("authToken");
-    delete authAPI.apiClient.defaults.headers.common['Authorization'];
+    localStorage.removeItem("encryptedUser");
     setUser(null);
+    // الباك إند يتولى حذف الكوكي تلقائيًا
   };
 
   // اختيار البرنامج

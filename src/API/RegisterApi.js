@@ -5,95 +5,56 @@ const apiClient = axios.create({
   baseURL: 'https://backend.thanawy.com',
   headers: {
     'Content-Type': 'application/json',
-  
   },
-  credentials: 'include',
-  withCredentials: true,
+  withCredentials: true, // مهم جدًا لإرسال الكوكي
 });
 
+// تسجيل المستخدم
 export const register = async (userData) => {
-  try {
-    if (!userData.email || !userData.displayName || !userData.password || !userData.phoneNumber || !userData.program) {
-      throw new Error('جميع البيانات المطلوبة غير موجودة');
-    }
-
-    console.log('بيانات التسجيل:', { ...userData, password: '******' });
-    
-    const response = await apiClient.post('/auth/register', userData);
-    console.log('استجابة التسجيل:', response.data);
-    
-    localStorage.setItem('registeredEmail', userData.email);
-    
-    if (response.data.token) {
-      localStorage.setItem('authToken', response.data.token);
-    }
-    
-    return response.data;
-  } catch (error) {
-    console.error('خطأ في التسجيل:', error);
-    throw error;
+  if (!userData.email || !userData.displayName || !userData.password || !userData.phoneNumber || !userData.program) {
+    throw new Error('جميع البيانات المطلوبة غير موجودة');
   }
+
+  const response = await apiClient.post('/auth/register', userData);
+  localStorage.setItem('registeredEmail', userData.email);
+
+  if (response.data.token) {
+    localStorage.setItem('authToken', response.data.token);
+  }
+
+  return response.data;
 };
 
-// التعديل الرئيسي هنا: إضافة معامل email
+// التحقق من البريد
 export const verifyEmail = async (code) => {
-  try {
-    if (!code ) {
-      throw new Error('رمز التحقق والبريد الإلكتروني مطلوبان');
-    }
-
-    console.log('بيانات التحقق:', { code });
-    
-    const response = await apiClient.post('/auth/verify-digit', { 
-      code,
-      
-    });
-    
-    console.log('استجابة التحقق:', response.data);
-    
-    localStorage.removeItem('registeredEmail');
-    
-    return response.data;
-  } catch (error) {
-    console.error('خطأ في التحقق من البريد الإلكتروني:', error);
-    throw error;
+  if (!code) {
+    throw new Error('رمز التحقق مطلوب');
   }
+
+  const response = await apiClient.post('/auth/verify-digit', { code });
+  localStorage.removeItem('registeredEmail');
+  return response.data;
 };
 
+// إعادة إرسال كود التحقق
 export const resendVerificationCode = async (email) => {
-  try {
-    const userEmail = email || localStorage.getItem('registeredEmail');
-    
-    if (!userEmail) {
-      throw new Error('البريد الإلكتروني غير متوفر، يرجى إعادة تسجيل الدخول');
-    }
-    
-    console.log('إعادة إرسال الرمز إلى:', userEmail);
-    
-    const response = await apiClient.post('/auth/resend-verification', { email: userEmail });
-    
-    console.log('استجابة إعادة الإرسال:', response.data);
-    
-    return response.data;
-  } catch (error) {
-    console.error('خطأ في إعادة إرسال رمز التحقق:', error);
-    throw error;
-  }
+  const userEmail = email || localStorage.getItem('registeredEmail');
+  if (!userEmail) throw new Error('البريد الإلكتروني غير متوفر');
+
+  const response = await apiClient.post('/auth/resend-verification', { email: userEmail });
+  return response.data;
 };
 
+// تسجيل الدخول
 export const login = async (credentials) => {
-  try {
-    const response = await apiClient.post('/auth/login', credentials);
-    
-    if (response.data.token) {
-      localStorage.setItem('authToken', response.data.token);
-    }
-    
-    return response.data;
-  } catch (error) {
-    console.error('خطأ في تسجيل الدخول:', error);
-    throw error;
-  }
+  const response = await apiClient.post('/auth/login', credentials);
+  return response.data;
+};
+
+// ✅ التحقق من حالة الجلسة
+export const getSessionStatus = async () => {
+  const response = await apiClient.get('/auth/status');
+  return response.data;
 };
 
 export { apiClient };

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import user from "../../assets/images/user.png";
 import home from "../../assets/icons/home.svg";
 import rank from "../../assets/icons/rank.svg";
@@ -17,8 +17,29 @@ import statisticsLight from "../../assets/icons/statisticsLight.svg";
 import subscribtionLight from "../../assets/icons/subscribtionLight.svg";
 import taskLight from "../../assets/icons/taskLight.svg";
 
-export default function Navbar() {
+export default function Navbar({ currentTitle, currentPath }) {
   const [activeItem, setActiveItem] = useState("home");
+  const location = useLocation();
+
+  // Update active item based on current path
+  useEffect(() => {
+    // Set active item based on path
+    if (currentPath === "/subjects" || currentPath === "/home") {
+      setActiveItem("home");
+    } else if (currentPath === "/statistics") {
+      setActiveItem("statistics");
+    } else if (currentPath === "/tests") {
+      setActiveItem("task");
+    } else if (currentPath === "/ranking") {
+      setActiveItem("rank");
+    } else if (currentPath === "/subscriptions") {
+      setActiveItem("subscription");
+    } else if (currentPath === "/settings") {
+      setActiveItem("settings");
+    } else if (currentPath === "/logout") {
+      setActiveItem("logOut");
+    }
+  }, [currentPath]);
 
   const navItems = [
     {
@@ -123,7 +144,7 @@ export default function Navbar() {
         {/* Logo / Title */}
         <div className="navbar-start">
           <p className="font-bold hidden xl:block md:text-[24px] leading-[32px] text-[#0B011E]">
-            المواد الدراسية
+            {currentTitle}
           </p>
           <p className="block sm:hidden text-primary font-bold">ثانوي</p>
         </div>
