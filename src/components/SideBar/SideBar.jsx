@@ -18,7 +18,7 @@ import robot from "../../assets/images/robot.svg";
 
 export default function SideBar({ isOpen, setIsOpen, setCurrentTitle, currentPath }) {
   const [activeItem, setActiveItem] = useState("home");
-  const location = useLocation();
+  // const location = useLocation();
   
   // Set default sidebar state based on screen size
   useEffect(() => {
@@ -132,7 +132,7 @@ export default function SideBar({ isOpen, setIsOpen, setCurrentTitle, currentPat
   return (
     <div
       className={`h-auto min-h-screen md:block hidden bg-white ${
-        isOpen ? "w-48" : "w-[90px]"
+        isOpen ? "w-52" : "w-[90px]"
       } transition-all duration-300`}
     >
       {/* Header */}

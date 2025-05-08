@@ -80,7 +80,7 @@ const Login = () => {
     },
     onSuccess: () => {
       // التوجيه إلى الصفحة الرئيسية بعد تسجيل الدخول
-      navigate("/home");
+      navigate("/subjects");
     },
     onError: (error) => {
       console.error("Login failed:", error);

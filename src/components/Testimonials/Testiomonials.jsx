@@ -30,7 +30,7 @@ const CalendarSlider = () => {
     { day: "أ", date: "", status: "completed" },
   ];
   return (
-    <div className="w-full flex flex-col items-center gap-2 font-bold py-2">
+    <div className="w-full flex flex-col  items-center gap-2 font-bold py-2">
       <div className="flex items-center justify-evenly w-full gap-2 text-lg">
         <button className="text-xl text-gray-600">{"‹"}</button>
         <div className="text-black flex flex-row-reverse items-center gap-2">
@@ -96,8 +96,8 @@ const CalendarSlider = () => {
 
 export default function Testimonials() {
   return (
-    <div className="xl:w-full flex flex-col justify-center items-center gap-3">
-      <div className="first w-full">
+    <div className="xl:w-full flex flex-col justify-start mt-[-60px]  items-start gap-3 scale-[85%]">
+      <div className="first w-full  ">
         <TestCard>
           <div className="imageAndInfo">
             <img
@@ -106,7 +106,7 @@ export default function Testimonials() {
               className="size-24"
             />
             <div className="">
-              <p className="absolute text-center top-[22%] md:right-[28%] 2xl:right-[35%] object-center objext-fit text-[10px] font-[500] z-10 text-[#AD46FF] border border-[#AD46FF] h-4 w-8 rounded-full bg-white">
+              <p className="absolute text-center top-[22%] md:right-[28%] 2xl:right-[35%] object-center object-fit text-[10px] font-[500] z-10 text-[#AD46FF] border border-[#AD46FF] h-4 w-8 rounded-full bg-white">
                 96%
               </p>
             </div>

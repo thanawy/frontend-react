@@ -24,7 +24,7 @@ const SuccessModal = ({ isOpen }) => {
 
     if (isOpen && countdown === 0) {
       const redirectTimer = setTimeout(() => {
-        navigate("/home");
+        navigate("/subjects"); 
       }, 500);
       return () => clearTimeout(redirectTimer);
     }
@@ -33,7 +33,7 @@ const SuccessModal = ({ isOpen }) => {
   if (!isOpen) return null;
 
   const handleNavigate = () => {
-    navigate("/home");
+    navigate("/subjects"); 
   };
 
   return (
